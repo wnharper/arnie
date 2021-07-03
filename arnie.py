@@ -2,7 +2,7 @@ import logging
 import picar
 import cv2
 import datetime
-from lane_follow import LaneFollower
+from lane_follow import HandCodedLaneFollower
 #from objects_on_road_processor import ObjectsOnRoadProcessor
 
 _SHOW_IMAGE = True
@@ -39,7 +39,7 @@ class Arnie(object):
 
         logging.debug('Setting up front wheels')
         self.front_wheels = picar.front_wheels.Front_Wheels()
-        self.front_wheels.turning_offset = -25  # calibrate servo to center
+        self.front_wheels.turning_offset = 0  # calibrate servo to center
         self.front_wheels.turn(90)  # Steering Range is 45 (left) - 90 (center) - 135 (right)
 
         self.lane_follower = HandCodedLaneFollower(self)
@@ -123,7 +123,7 @@ def show_image(title, frame, show=_SHOW_IMAGE):
 
 def main():
     with Arnie() as car:
-        car.drive(40)
+        car.drive(20)
 
 
 if __name__ == '__main__':
