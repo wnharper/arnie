@@ -46,10 +46,10 @@ class Arnie(object):
         #self.traffic_sign_processor = ObjectsOnRoadProcessor(self)
         # lane_follower = DeepLearningLaneFollower()
 
-        self.fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        self.fourcc = cv2.VideoWriter_fourcc(*'H264')
         datestr = datetime.datetime.now().strftime("%y%m%d_%H%M%S")
-        self.video_orig = self.create_video_recorder('/home/pi/DeepPiCar/driver/data/car_video%s.avi' % datestr)
-        self.video_lane = self.create_video_recorder('/home/pi/DeepPiCar/driver/data/car_video_lane%s.avi' % datestr)
+        self.video_orig = self.create_video_recorder('/home/pi/DeepPiCar/driver/data/car_video%s.mp4' % datestr)
+        self.video_lane = self.create_video_recorder('/home/pi/DeepPiCar/driver/data/car_video_lane%s.mp4' % datestr)
         #self.video_objs = self.create_video_recorder('../data/tmp/car_video_objs%s.avi' % datestr)
 
         logging.info('Created Arnie')
