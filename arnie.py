@@ -3,6 +3,7 @@ import picar
 import cv2
 import datetime
 from lane_follow import HandCodedLaneFollower
+from end_to_end_lane_follower import EndToEndLaneFollower
 #from objects_on_road_processor import ObjectsOnRoadProcessor
 
 _SHOW_IMAGE = True
@@ -42,15 +43,15 @@ class Arnie(object):
         self.front_wheels.turning_offset = 0  # calibrate servo to center
         self.front_wheels.turn(90)  # Steering Range is 45 (left) - 90 (center) - 135 (right)
 
-        self.lane_follower = HandCodedLaneFollower(self)
-        #self.traffic_sign_processor = ObjectsOnRoadProcessor(self)
-        # lane_follower = DeepLearningLaneFollower()
+        # self.lane_follower = HandCodedLaneFollower(self)
+        # self.traffic_sign_processor = ObjectsOnRoadProcessor(self)
+        self.lane_follower = EndToEndLaneFollower(self)
 
         self.fourcc = cv2.VideoWriter_fourcc(*'H264')
         datestr = datetime.datetime.now().strftime("%y%m%d_%H%M%S")
         self.video_orig = self.create_video_recorder('/home/pi/DeepPiCar/driver/data/car_video%s.mp4' % datestr)
         self.video_lane = self.create_video_recorder('/home/pi/DeepPiCar/driver/data/car_video_lane%s.mp4' % datestr)
-        #self.video_objs = self.create_video_recorder('../data/tmp/car_video_objs%s.avi' % datestr)
+        # self.video_objs = self.create_video_recorder('../data/tmp/car_video_objs%s.avi' % datestr)
 
         logging.info('Created Arnie')
 
