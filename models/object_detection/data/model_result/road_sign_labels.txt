@@ -1,0 +1,5 @@
+0 Green Traffic Light
+1 Red Traffic Light
+2 Speed Limit 35
+3 Speed Limit 55
+4 person

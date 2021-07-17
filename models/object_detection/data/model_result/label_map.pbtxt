@@ -1,0 +1,24 @@
+item {
+    id: 1
+    name: 'Green Traffic Light'
+}
+
+item {
+    id: 2
+    name: 'Red Traffic Light'
+}
+
+item {
+    id: 3
+    name: 'Speed Limit 35'
+}
+
+item {
+    id: 4
+    name: 'Speed Limit 55'
+}
+
+item {
+    id: 5
+    name: 'person'
+}

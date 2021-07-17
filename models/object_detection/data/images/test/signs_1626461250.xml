@@ -1,7 +1,7 @@
 <annotation>
-	<folder>test</folder>
+	<folder>train</folder>
 	<filename>signs_1626461250.jpg</filename>
-	<path>/Users/warren.harper/Desktop/car/code/models/object_detection/data/images/test/signs_1626461250.jpg</path>
+	<path>/Users/warren.harper/Desktop/car/code/models/object_detection/data/images/train/signs_1626461250.jpg</path>
 	<source>
 		<database>Unknown</database>
 	</source>
@@ -17,9 +17,9 @@
 		<truncated>0</truncated>
 		<difficult>0</difficult>
 		<bndbox>
-			<xmin>258</xmin>
-			<ymin>179</ymin>
-			<xmax>289</xmax>
+			<xmin>262</xmin>
+			<ymin>182</ymin>
+			<xmax>291</xmax>
 			<ymax>232</ymax>
 		</bndbox>
 	</object>
@@ -29,34 +29,10 @@
 		<truncated>0</truncated>
 		<difficult>0</difficult>
 		<bndbox>
-			<xmin>387</xmin>
-			<ymin>132</ymin>
-			<xmax>411</xmax>
-			<ymax>176</ymax>
-		</bndbox>
-	</object>
-	<object>
-		<name>Speed Limit 55</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>333</xmin>
-			<ymin>113</ymin>
-			<xmax>354</xmax>
-			<ymax>150</ymax>
-		</bndbox>
-	</object>
-	<object>
-		<name>Speed Limit 35</name>
-		<pose>Unspecified</pose>
-		<truncated>0</truncated>
-		<difficult>0</difficult>
-		<bndbox>
-			<xmin>280</xmin>
-			<ymin>111</ymin>
-			<xmax>304</xmax>
-			<ymax>143</ymax>
+			<xmin>138</xmin>
+			<ymin>118</ymin>
+			<xmax>161</xmax>
+			<ymax>155</ymax>
 		</bndbox>
 	</object>
 	<object>
@@ -65,10 +41,10 @@
 		<truncated>0</truncated>
 		<difficult>0</difficult>
 		<bndbox>
-			<xmin>140</xmin>
-			<ymin>120</ymin>
-			<xmax>157</xmax>
-			<ymax>153</ymax>
+			<xmin>387</xmin>
+			<ymin>133</ymin>
+			<xmax>411</xmax>
+			<ymax>177</ymax>
 		</bndbox>
 	</object>
 	<object>
@@ -78,9 +54,33 @@
 		<difficult>0</difficult>
 		<bndbox>
 			<xmin>198</xmin>
-			<ymin>117</ymin>
-			<xmax>215</xmax>
-			<ymax>149</ymax>
+			<ymin>114</ymin>
+			<xmax>214</xmax>
+			<ymax>150</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>Speed Limit 35</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>279</xmin>
+			<ymin>110</ymin>
+			<xmax>303</xmax>
+			<ymax>141</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>Speed Limit 55</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>334</xmin>
+			<ymin>115</ymin>
+			<xmax>352</xmax>
+			<ymax>147</ymax>
 		</bndbox>
 	</object>
 </annotation>
