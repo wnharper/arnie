@@ -1,43 +1,50 @@
-import logging
-import picar
-import cv2
-import datetime
-import sys, tty, termios, time
+# Manual keyboard controller for Arnie Self-driving car project
+# Use WASD keys to control car.
+# Images and corresponding steering angle will be saved to specified directory
+# Author: Warren Harper
+# Date: July 2021
 
-_SHOW_IMAGE = True
+import datetime
+import logging
+import sys
+import termios
+import time
+import tty
+
+import cv2
+import picar
 
 
 class ArnieController(object):
-    __INITIAL_SPEED = 0
-    __SCREEN_WIDTH = 320
-    __SCREEN_HEIGHT = 240
 
     def __init__(self):
-        """ Inititiating camera and wheels"""
+        """ Initiating Arnie's camera and wheels"""
 
         # Initiate car
         picar.setup()
 
         # Set up camera
         self.camera = cv2.VideoCapture(-1)
-        self.camera.set(3, self.__SCREEN_WIDTH)
-        self.camera.set(4, self.__SCREEN_HEIGHT)
+        self.camera.set(3, 320)
+        self.camera.set(4, 240)
+
+        # Setup video recording
+        self.fourcc = cv2.VideoWriter_fourcc(*'H264')
+        date_string = datetime.datetime.now().strftime("%y%m%d_%H%M%S")
+        self.video_orig = self.video_recorder('/home/pi/arnie/data/car_video%s.mp4' % date_string)
 
         # Set up back wheels
         self.back_wheels = picar.back_wheels.Back_Wheels()
-        self.back_wheels.speed = 0  # Speed Range is 0 (stop) - 100 (fastest)
+        self.back_wheels.speed = 0
 
         # Set up front wheels
         self.front_wheels = picar.front_wheels.Front_Wheels()
-        self.front_wheels.turning_offset = 0  # calibrate servo to center
-        self.front_wheels.turn(90)  # Steering Range is 45 (left) - 90 (center) - 135 (right)
+        self.front_wheels.turning_offset = 0
+        self.front_wheels.turn(90)
 
-        self.fourcc = cv2.VideoWriter_fourcc(*'H264')
-        datestr = datetime.datetime.now().strftime("%y%m%d_%H%M%S")
-        self.video_orig = self.create_video_recorder('/home/pi/DeepPiCar/driver/data/car_video%s.mp4' % datestr)
-
-    def create_video_recorder(self, path):
-        return cv2.VideoWriter(path, self.fourcc, 20.0, (self.__SCREEN_WIDTH, self.__SCREEN_HEIGHT))
+    # video recording helper function
+    def video_recorder(self, path):
+        return cv2.VideoWriter(path, self.fourcc, 20.0, (320, 240))
 
     # Take keyboard input
     def getch(self):
@@ -69,7 +76,7 @@ class ArnieController(object):
         self.video_orig.release()
         cv2.destroyAllWindows()
 
-    def drive(self, speed=__INITIAL_SPEED):
+    def drive(self, speed=0):
         """ Starting car according to speed arg (0-100) """
 
         self.back_wheels.speed = speed
@@ -80,9 +87,9 @@ class ArnieController(object):
         while self.camera.isOpened():
             _, frame = self.camera.read()
 
+            # Save image and corresponding steering angle
             self.video_orig.write(frame)
             cv2.imwrite("%s_%03d_%03d.png" % (date_time, i, steering), frame)
-            show_image('Arnie Vision', frame)
 
             i += 1
 
@@ -119,17 +126,9 @@ class ArnieController(object):
                 break
 
 
-############################
-# Utility Functions
-############################
-def show_image(title, frame, show=_SHOW_IMAGE):
-    if show:
-        cv2.imshow(title, frame)
-
-
 def main():
     with ArnieController() as car:
-        car.drive(20)
+        car.drive(0)
 
 
 if __name__ == '__main__':

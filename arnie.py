@@ -1,54 +1,76 @@
-import logging
-import picar
-import cv2
-import datetime
-from lane_follow import HandCodedLaneFollower
-from end_to_end_lane_follower import EndToEndLaneFollower
-from objects_on_road_processor import ObjectsOnRoadProcessor
+# Main driver program for Arnie self-driving car
+# Select feature below:
+# __MANUAL_LANE_FOLLOW uses the hand coded lane follower (non ML)
+# __ML_LANE_FOLLOW uses the trained machine learning model to follow lane
+# __OBJECT_DETECT uses the machine learning model to detect objects
+#
+# Warning, the Raspberry Pi (even with the TPU) does not have the power to run all
+# features at once unless the car is driving very slowly
+#
+# Author: Warren Harper
+# Date: July 2021
 
-_SHOW_IMAGE = True
+from lane_follow import ManualLaneFollower
+from ml_lane_follow import MlLaneFollower
+from object_detection_processor import ObjectDetectionProcessor
+import cv2
+import picar
+import logging
+import datetime
 
 
 class Arnie(object):
-
-    __INITIAL_SPEED = 0
-    __SCREEN_WIDTH = 320
-    __SCREEN_HEIGHT = 240
+    # Set variable to 'True' in order to enable
+    __MANUAL_LANE_FOLLOW = False
+    __ML_LANE_FOLLOW = False
+    __OBJECT_DETECT = True
 
     def __init__(self):
-        """ Inititiating camera and wheels"""
+        """ Initiating Arnie's camera and wheels"""
         logging.info('Creating Arnie the self driving car...')
 
-        picar.setup()
+        date_string = datetime.datetime.now().strftime("%y%m%d_%H%M%S")
 
-        logging.debug('Setting up camera')
+        # Start/ setup the camera / video
+        logging.debug(' Starting camera')
         self.camera = cv2.VideoCapture(-1)
-        self.camera.set(3, self.__SCREEN_WIDTH)
-        self.camera.set(4, self.__SCREEN_HEIGHT)
-
-        logging.debug('Setting up back wheels')
-        self.back_wheels = picar.back_wheels.Back_Wheels()
-        self.back_wheels.speed = 0  # Speed Range is 0 (stop) - 100 (fastest)
-
-        logging.debug('Setting up front wheels')
-        self.front_wheels = picar.front_wheels.Front_Wheels()
-        self.front_wheels.turning_offset = 0  # calibrate servo to center
-        self.front_wheels.turn(90)  # Steering Range is 45 (left) - 90 (center) - 135 (right)
-
-        self.lane_follower = HandCodedLaneFollower(self)
-        self.traffic_sign_processor = ObjectsOnRoadProcessor(self)
-        self.lane_follower = EndToEndLaneFollower(self)
-
+        self.camera.set(3, 320)
+        self.camera.set(4, 240)
         self.fourcc = cv2.VideoWriter_fourcc(*'H264')
-        datestr = datetime.datetime.now().strftime("%y%m%d_%H%M%S")
-        self.video_orig = self.create_video_recorder('/home/pi/DeepPiCar/driver/data/car_video%s.mp4' % datestr)
-        self.video_lane = self.create_video_recorder('/home/pi/DeepPiCar/driver/data/car_video_lane%s.mp4' % datestr)
-        self.video_objs = self.create_video_recorder('/home/pi/DeepPiCar/driver/data/object_detection%s.mp4' % datestr)
+        self.video_main = self.video_recorder('/home/pi/DeepPiCar/driver/data/car_video%s.mp4' % date_string)
+
+        # Car setup
+        picar.setup()
+        # Set back wheel speed to 0. Range is 0-100
+        logging.debug('Setting back wheel speed to 0')
+        self.back_wheels = picar.back_wheels.Back_Wheels()
+        self.back_wheels.speed = 0
+
+        # Set the front wheels straight (90) Range is 45 - 135
+        logging.debug('Setting front wheels to straight (90)')
+        self.front_wheels = picar.front_wheels.Front_Wheels()
+        self.front_wheels.turning_offset = 0
+        self.front_wheels.turn(90)
+
+        # Initiate main processing units according to feature selection
+        if __MANUAL_LANE_FOLLOW:
+            self.lane_follower = ManualLaneFollower(self)
+            self.video_lane = self.video_recorder('/home/pi/arnie/data/car_video_lane%s.mp4' % date_string)
+
+        if __OBJECT_DETECT:
+            self.object_detect_processor = ObjectsOnRoadProcessor(self)
+            self.video_objects = self.video_recorder(
+                '/home/pi/arnie/data/object_detection%s.mp4' % date_string)
+
+        if __ML_LANE_FOLLOW:
+            self.lane_follower = MlLaneFollower(self)
+            self.video_lane = self.video_recorder('/home/pi/arnie/data/car_video_lane%s.mp4' % date_string)
 
         logging.info('Created Arnie')
 
-    def create_video_recorder(self, path):
-        return cv2.VideoWriter(path, self.fourcc, 20.0, (self.__SCREEN_WIDTH, self.__SCREEN_HEIGHT))
+    # Helper function to return a video recording object
+    def video_recorder(self, path):
+        return cv2.VideoWriter(path, self.fourcc, 20.0, (320, 240))
 
     def __enter__(self):
         """ Entering """
@@ -58,60 +80,66 @@ class Arnie(object):
         """ Exiting """
         if traceback is not None:
             # Exception occurred:
-            logging.error('Exiting with statement with exception %s' % traceback)
+            logging.error('Exiting with exception %s' % traceback)
 
-        self.cleanup()
+        self.cleanup_program()
 
-    def cleanup(self):
-        """ Resetting the hardware """
+    # Reset car, videos and windows when exiting program
+    def cleanup_program(self):
+        """ Resetting Arnie's hardware and closing windows """
         logging.info('Stopping arnie, resetting all hardware.')
+        
+        # Reset car
         self.back_wheels.speed = 0
         self.front_wheels.turn(90)
         self.camera.release()
-        self.video_orig.release()
-        self.video_lane.release()
-        self.video_objs.release()
+        
+        # close videos
+        self.video_main.release()
+        
+        if __MANUAL_LANE_FOLLOW or __ML_LANE_FOLLOW:
+            self.video_lane.release()
+
+        if __OBJECT_DETECT:
+            self.video_objects.release()
+            
+        # close all open windows    
         cv2.destroyAllWindows()
 
-    def drive(self, speed=__INITIAL_SPEED):
-        """ Starting car according to speed arg (0-100) """
+    def drive(self, speed):
+        """ Driving car according to speed argument """
 
-        logging.info('Driving at speed %s...' % speed)
+        logging.info('Current speed is %s...' % speed)
         self.back_wheels.speed = speed
         i = 0
         while self.camera.isOpened():
-            _, image_lane = self.camera.read()
-            image_objs = image_lane.copy()
+            _, main_image = self.camera.read()
+            object_detect_image = main_image.copy()
             i += 1
-            self.video_orig.write(image_lane)
+            self.video_main.write(main_image)
 
-            image_objs = self.process_objects_on_road(image_objs)
-            self.video_objs.write(image_objs)
-            show_image('Detected Objects', image_objs)
+            if __OBJECT_DETECT:
+                object_detect_image = self.detect_objects_in_lane(object_detect_image)
+                self.video_objects.write(object_detect_image)
+                cv2.imshow('Detected Objects', object_detect_image)
 
-            image_lane = self.follow_lane(image_lane)
-            self.video_lane.write(image_lane)
-            show_image('Lane Lines', image_lane)
-
+            if __MANUAL_LANE_FOLLOW or __ML_LANE_FOLLOW:
+                main_image = self.follow_lane(main_image)
+                self.video_lane.write(main_image)
+                cv2.imshow('Lanes / Path', main_image)
+            
+            # Quit program if 'q' key is pressed
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 self.cleanup()
                 break
 
-    def process_objects_on_road(self, image):
-        image = self.traffic_sign_processor.process_objects_on_road(image)
+    def detect_objects_in_lane(self, image):
+        image = self.traffic_sign_processor.detect_objects_in_lane(image)
         return image
 
     def follow_lane(self, image):
         image = self.lane_follower.follow_lane(image)
         return image
-
-
-############################
-# Utility Functions
-############################
-def show_image(title, frame, show=_SHOW_IMAGE):
-    if show:
-        cv2.imshow(title, frame)
 
 
 def main():
