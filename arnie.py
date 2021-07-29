@@ -1,8 +1,8 @@
 # Main driver program for Arnie self-driving car
-# Select feature below:
-# __MANUAL_LANE_FOLLOW uses the hand coded lane follower (non ML)
-# __ML_LANE_FOLLOW uses the trained machine learning model to follow lane
-# __OBJECT_DETECT uses the machine learning model to detect objects
+# Select feature by providing an argument(1,2,3 eg 'python arnie.py 2' will run ml mode:
+# mode 1: manual_lane_follow uses the hand coded lane follower (non ML)
+# mode 2: ml_lane_follow uses the trained machine learning model to follow lane
+# mode 3: object_detect uses the machine learning model to detect objects
 #
 # Warning, the Raspberry Pi (even with the TPU) does not have the power to run all
 # features at once unless the car is driving very slowly
@@ -20,13 +20,25 @@ import datetime
 
 
 class Arnie(object):
-    # Set variable to 'True' in order to enable
-    __MANUAL_LANE_FOLLOW = False
-    __ML_LANE_FOLLOW = False
-    __OBJECT_DETECT = True
 
-    def __init__(self):
+    def __init__(self, mode):
         """ Initiating Arnie's camera and wheels"""
+
+        # take an argument of 1-3 in order to select the mode
+        manual_lane_follow = False
+        ml_lane_follow = False
+        object_detect = False
+
+        if mode == '1':
+            manual_lane_follow = True
+        elif mode == '2':
+            ml_lane_follow = True
+        elif mode == '3':
+            object_detect = True
+        else:
+            print("not a valid argument, choose 1-3")
+            quit()
+
         logging.info('Creating Arnie the self driving car...')
 
         date_string = datetime.datetime.now().strftime("%y%m%d_%H%M%S")
@@ -53,16 +65,16 @@ class Arnie(object):
         self.front_wheels.turn(90)
 
         # Initiate main processing units according to feature selection
-        if __MANUAL_LANE_FOLLOW:
+        if manual_lane_follow:
             self.lane_follower = ManualLaneFollower(self)
             self.video_lane = self.video_recorder('/home/pi/arnie/data/car_video_lane%s.mp4' % date_string)
 
-        if __OBJECT_DETECT:
+        if object_detect:
             self.object_detect_processor = ObjectsOnRoadProcessor(self)
             self.video_objects = self.video_recorder(
                 '/home/pi/arnie/data/object_detection%s.mp4' % date_string)
 
-        if __ML_LANE_FOLLOW:
+        if ml_lane_follow:
             self.lane_follower = MlLaneFollower(self)
             self.video_lane = self.video_recorder('/home/pi/arnie/data/car_video_lane%s.mp4' % date_string)
 
@@ -142,12 +154,16 @@ class Arnie(object):
         return image
 
 
-def main():
-    with Arnie() as car:
+def main(mode):
+    if mode != 1 or not 2 or not 3:
+        print("Not a valid mode")
+        quit()
+
+    with Arnie(mode) as car:
         car.drive(20)
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG, format='%(levelname)-5s:%(asctime)s: %(message)s')
 
-    main()
+    main(sys.argv[1])
